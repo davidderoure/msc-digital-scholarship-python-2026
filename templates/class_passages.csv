@@ -1,0 +1,5 @@
+model,target,prompt,text,gutenberg_id,language
+"EXAMPLE (delete this row): ChatGPT, free version",Pride and Prejudice,"Write an original passage of about 1,000 words in the style of Jane Austen, as if it were part of Pride and Prejudice. Do not quote or closely paraphrase the novel. Write plain prose only: no title, no headings, and no comments before or after the passage.","Paste the AI's passage here, exactly as it was written.
+
+Paragraph breaks are fine.",,
+EXAMPLE (delete this row): a novel of your own choice,Don Quijote,"Escribe un pasaje original de unas 1.000 palabras en el estilo de Miguel de Cervantes, como si formara parte de Don Quijote. ...",Pega aquí el pasaje de la IA.,2000,spanish
