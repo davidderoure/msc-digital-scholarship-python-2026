@@ -60,9 +60,15 @@ nltk.download('punkt_tab', quiet=True)
 
 
 def get_gutenberg(book_id):
-    url = f"https://www.gutenberg.org/cache/epub/{book_id}/pg{book_id}.txt"
-    raw = urllib.request.urlopen(url).read().decode("utf-8")
-    return raw.replace("\r\n", "\n")
+    # try Project Gutenberg's main site first, then its mirror in case the main site is busy or down
+    for site in ["https://www.gutenberg.org", "https://gutenberg.pglaf.org"]:
+        url = f"{site}/cache/epub/{book_id}/pg{book_id}.txt"
+        try:
+            raw = urllib.request.urlopen(url, timeout=60).read().decode("utf-8")
+            return raw.replace("\r\n", "\n")
+        except OSError as problem:
+            print(f"Couldn't download book {book_id} from {site} ({problem})")
+    raise RuntimeError(f"Couldn't download book {book_id}: check the number, or try again later")
 
 def strip_gutenberg(raw):
     start = raw.find("*** START OF")
