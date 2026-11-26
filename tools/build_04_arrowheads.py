@@ -182,7 +182,27 @@ print(arrows["length"].notna().sum(), "records have a length")
 """)
 
 md(r"""
-Now **look at what didn't match**. Never trust a pattern until you've seen what it missed:
+### How to read the pattern
+
+`r"^\s*(?:Max )?L\s*=\s*([\d.]+)\s*mm"` in plain English: *at the start of the text, an optional "Max", then "L", an equals sign, a number, and "mm". Keep the number.*
+
+| Piece | Meaning |
+|---|---|
+| `r"..."` | a "raw" string: Python leaves the backslashes alone for the regex |
+| `^` | the start of the text: only a length at the very beginning counts |
+| `\s*` | any amount of space, including none |
+| `(?:Max )?` | the word "Max " once, or not at all. `(?: )` groups without keeping |
+| `L` | a capital L, for length (a small `l` won't match) |
+| `\s*=\s*` | an equals sign, with or without spaces around it |
+| `([\d.]+)` | one or more digits or dots: the number. The plain brackets **capture** it, and `match.group(1)` gives it back |
+| `\s*mm` | optional spaces, then "mm" |
+
+So `L = 41 mm  W = 27 mm` gives `41` (the width is ignored), but `L [approx] = 30 mm` and `Max Diam = 9 mm` give nothing.
+A regex doesn't complain when it fails. It just finds nothing, so we must look for ourselves:
+""")
+
+md(r"""
+**Look at what didn't match**. Never trust a pattern until you've seen what it missed:
 """)
 
 code(r"""
@@ -231,6 +251,14 @@ plt.xlabel("length (mm)")
 plt.ylabel("number of objects")
 plt.title(f"Objects up to {CUT_OFF} mm")
 plt.show()
+""")
+
+md(r"""
+**Mean and median, a reminder.**
+- The **mean** is the ordinary average: add up all the lengths and divide by how many there are.
+- The **median** is the middle one: line the lengths up from shortest to longest and take the one halfway along. Half the objects are shorter, half are longer.
+
+A few very long objects pull the mean up, because their lengths are added in, but they hardly move the median, which only cares about the order.
 """)
 
 md(r"""
