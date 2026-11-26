@@ -324,6 +324,10 @@ md(r"""
 
 This is the main exploring cell. Choose what to group by, and how many objects a group needs before it's shown.
 Every dot is an object: hover to see which. The table underneath gives the numbers.
+
+`MIN_OBJECTS` hides small groups, so that a box built from two or three arrowheads doesn't look as solid as one built from hundreds.
+The cell prints which groups it hid, and each label shows how many objects that box is based on (`n=`).
+Try `country` with the slider at 1, then at 50: what disappears, and does the story change?
 """)
 
 code(r"""
@@ -333,12 +337,24 @@ MIN_OBJECTS = 20  # @param {type:"slider", min:1, max:200, step:1}
 heads = arrows[arrows["length"] <= CUT_OFF]               # uses the cut-off from Section 6
 data = heads[heads[GROUP_BY] != ""]
 sizes = data[GROUP_BY].value_counts()
-data = data[data[GROUP_BY].isin(sizes[sizes >= MIN_OBJECTS].index)]
+shown, hidden = sizes[sizes >= MIN_OBJECTS], sizes[sizes < MIN_OBJECTS]
+data = data[data[GROUP_BY].isin(shown.index)].copy()
+
+print(f"Showing {len(shown)} groups ({shown.sum()} objects) with at least {MIN_OBJECTS} objects each.")
+if len(hidden):
+    examples = ", ".join(f"{name} ({n})" for name, n in hidden.head(10).items())
+    more = f" and {len(hidden) - 10} more" if len(hidden) > 10 else ""
+    print(f"Hidden: {len(hidden)} smaller groups ({hidden.sum()} objects): {examples}{more}")
+else:
+    print("Hidden: nothing; every group is big enough.")
 
 summary = data.groupby(GROUP_BY)["length"].agg(["count", "median", "mean"]).round(1).sort_values("median")
-fig = px.box(data, x=GROUP_BY, y="length", points="all", category_orders={GROUP_BY: list(summary.index)},
+data["group"] = data[GROUP_BY].map(lambda name: f"{name} (n={shown[name]})")
+fig = px.box(data, x="group", y="length", points="all",
+             category_orders={"group": [f"{name} (n={shown[name]})" for name in summary.index]},
              hover_data=["Accession number", "Description", "country"],
-             title=f"Length of arrowheads (up to {CUT_OFF} mm) by {GROUP_BY}")
+             title=f"Length of arrowheads (up to {CUT_OFF} mm) by {GROUP_BY}: groups with at least {MIN_OBJECTS} objects")
+fig.update_layout(xaxis_title=GROUP_BY)
 fig.update_layout(yaxis_title="length (mm)")
 fig.show()
 summary
