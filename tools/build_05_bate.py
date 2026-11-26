@@ -185,6 +185,31 @@ md(r"""
 Lengths are written two ways in this catalogue: `Max L = 564 mm` and `392mm x 50mm`. Our `length_mm` handles both, but it **assumes** the first number is the length.
 """)
 
+md(r"""
+### How to read the pattern
+
+Here is the pattern in `length_mm`, next to the arrowheads one:
+
+- Arrowheads: `^\s*(?:Max )?L\s*=\s*([\d.]+)\s*mm`
+- Bate: `^\s*(?:Max L\s*[=:]\s*)?([\d.]+)\s*mm`
+
+In plain English, the Bate pattern says: *at the start of the text, optionally "Max L" followed by `=` or `:`, then a number and "mm". Keep the number.*
+
+| Piece | Meaning |
+|---|---|
+| `^\s*` | the start of the text, then any amount of space |
+| `(?:Max L\s*[=:]\s*)?` | the whole label "Max L =" (or "Max L:") is **optional** this time. `[=:]` means "either `=` or `:`" |
+| `([\d.]+)` | one or more digits or dots: the number, **captured** so `match.group(1)` gives it back |
+| `\s*mm` | optional spaces, then "mm" |
+
+What changed, and why:
+- Because the label is optional, `392mm x 50mm` now matches and gives `392`. That's the **assumption**: the first number is the length.
+- `[=:]` catches the Bate cataloguers' habit of sometimes writing a colon.
+- A plain `L = 30 mm`, without "Max", **no longer** matches. It didn't occur in Bate, so we didn't need it. A pattern fits a catalogue, not the world.
+
+> **Check yourself.** What would each give: `Max L: 610 mm`, `L = 610 mm`, `610 mm (approx)`, `W 40mm L 600mm`? Test them with `length_mm(...)` in a new cell.
+""")
+
 code(r"""
 bate["length"] = [length_mm(d) for d in bate["Dimensions"]]
 print(bate["length"].notna().sum(), "of", len(bate), "records have a length")
@@ -470,6 +495,19 @@ code(r"""
 md(r"""
 > **Critical check.** How did the AI handle the dates: midpoint, spread, or something else? Did it notice the records with no date?
 > Did it use our tidy `family` and `maker` columns, or the messy originals?
+""")
+
+md(r"""
+## Report back
+
+Be ready to tell the class, in a sentence or two each:
+
+1. **One cleaning decision** you made or changed (a class, a cut-off, merging uncertain places, what counts as "playable"). Did it change any result you could see?
+2. **Midpoint or spread** for the dates: which did you trust, and what does each one hide?
+3. **One way the Bate catalogue differs from Pitt Rivers**: something it records better, or worse, and why that might be.
+4. **Where an AI helped, or got it wrong**, and how you found out.
+
+Note the Section and the settings you used, so others can reproduce what you saw.
 
 ## Summary
 
